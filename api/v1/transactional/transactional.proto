@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package transactional;
+
+option go_package = "github/b2r2/transactional-srv-test/pkg/api/v1/transactional;transactional";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service TransactionalService {
+  // Добавить пользователя
+  rpc AddUser(AddUserRequest) returns (AddUserResponse) {
+    option(google.api.http) = {
+      post: "/v1/add"
+      body: "*"
+    };
+  }
+  // Пополнить
+  rpc Deposit(DepositRequest) returns (google.protobuf.Empty) {
+    option(google.api.http) = {
+      put: "/v1/deposit"
+      body: "*"
+    };
+  }
+  // Снять
+  rpc Withdraw(WithdrawRequest) returns (google.protobuf.Empty) {
+    option(google.api.http) = {
+      put: "/v1/withdraw"
+      body: "*"
+    };
+  }
+  // Получить баланс
+  rpc Balance(BalanceRequest) returns (BalanceResponse) {
+    option(google.api.http) = {
+      get: "/v1/balance/{client_id}"
+    };
+  }
+}
+
+message AddUserRequest {
+  string username = 1;
+  optional int64 balance = 2;
+}
+
+message AddUserResponse {
+  uint64 client_id = 1;
+}
+
+message DepositRequest {
+  uint64 client_id = 1;
+  uint64 amount = 2;
+}
+
+message WithdrawRequest {
+  uint64 client_id = 1;
+  uint64 amount = 2;
+}
+
+message BalanceRequest {
+  uint64 client_id = 1;
+}
+
+message BalanceResponse {
+  string username = 1;
+  int64 balance = 2;
+}
