@@ -21,25 +21,17 @@ func (s *Service) Withdraw(ctx context.Context, clientID, amount uint64) error {
 		return status.Error(codes.Internal, err.Error())
 	}
 	balance := *client.Balance
+	nb := balance - int64(amount)
+	if nb < 0 {
+		err = fmt.Errorf("do not have enough funds")
+		return err
+	}
 	eventID, err := s.r.AddEvent(ctx, model.NewEvents(client.ID,
 		amount,
 		balance,
 		s.EventsTypeIDs.Withdraw,
 		s.EventsStatusIDs.Processing))
 	if err != nil {
-		return err
-	}
-	nb := balance - int64(amount)
-	if nb < 0 {
-		err = fmt.Errorf("do not have enough funds")
-		_, errEvent := s.r.AddEvent(ctx, model.NewEvents(client.ID,
-			amount,
-			balance,
-			s.EventsTypeIDs.Withdraw,
-			s.EventsStatusIDs.Deferred))
-		if errEvent != nil {
-			return fmt.Errorf("%s: %w", err.Error(), errEvent)
-		}
 		return err
 	}
 	err = s.r.BalanceProcessing(ctx, client.ID, nb)
